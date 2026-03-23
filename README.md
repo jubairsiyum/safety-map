@@ -1,36 +1,177 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Community Safety Map
+
+A web application for reporting and tracking safety incidents in your community. Users can mark locations on an interactive map and submit incident reports including details like incident type, severity, and descriptions.
+
+## Features
+
+- 🗺️ **Interactive Map**: Click anywhere on the map to select incident locations
+- 📍 **Location-based Reporting**: Pinpoint exact incident locations with lat/long coordinates
+- 🎨 **Color-coded Markers**: Different severity levels shown with distinct colors:
+  - 🔴 Critical (Red)
+  - 🟠 High (Orange)
+  - 🟡 Medium (Yellow)
+  - 🟢 Low (Green)
+- 📋 **Incident Categories**: Robbery, Accident, Assault, Harassment, Other
+- 🔍 **Filtering**: Filter incidents by type and severity
+- 📊 **Statistics**: Real-time stats showing incident counts by severity
+- 💾 **Database Storage**: All incidents stored in MongoDB
+
+## Tech Stack
+
+- **Frontend**: Next.js 14, React, TypeScript, Tailwind CSS
+- **Maps**: Leaflet.js with OpenStreetMap tiles
+- **Database**: MongoDB with Mongoose
+- **Forms**: React Hook Form with Zod validation
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
+- Node.js 18+
+- MongoDB (local or Atlas cloud instance)
+
+### Installation
+
+1. Clone the repository:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <repo-url>
+cd safety-map
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install dependencies:
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Set up environment variables:
+```bash
+cp .env.local.example .env.local
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Edit `.env.local` and add your MongoDB connection string:
+```
+MONGODB_URI=mongodb://localhost:27017/safety-map
+```
 
-## Learn More
+4. Run the development server:
+```bash
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+5. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### MongoDB Setup
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+#### Option 1: Local MongoDB
+Install MongoDB Community Edition locally and start the service:
+```bash
+# On Windows
+net start MongoDB
 
-## Deploy on Vercel
+# On macOS with Homebrew
+brew services start mongodb-community
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# On Linux
+sudo systemctl start mongod
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+#### Option 2: MongoDB Atlas (Cloud)
+1. Create an account at [MongoDB Atlas](https://www.mongodb.com/atlas)
+2. Create a new cluster
+3. Get your connection string from the dashboard
+4. Update `.env.local` with the connection string
+
+## Usage
+
+1. **View Incidents**: The map displays all reported incidents with color-coded markers
+2. **Filter**: Use the dropdowns to filter by incident type and severity
+3. **Report an Incident**:
+   - Click on the map to select the location
+   - Fill out the form with incident details
+   - Submit the report
+4. **Click Markers**: View full details of any incident by clicking on its marker
+
+## Project Structure
+
+```
+safety-map/
+├── src/
+│   ├── app/
+│   │   ├── api/
+│   │   │   └── incidents/
+│   │   │       ├── route.ts          # GET/POST all incidents
+│   │   │       └── [id]/
+│   │   │           └── route.ts      # GET/PATCH/DELETE single incident
+│   │   ├── layout.tsx
+│   │   └── page.tsx                  # Main application page
+│   ├── components/
+│   │   ├── IncidentForm.tsx          # Incident submission form
+│   │   └── SafetyMap.tsx             # Interactive map component
+│   ├── lib/
+│   │   └── db.ts                     # MongoDB connection
+│   └── models/
+│       └── Incident.ts               # Mongoose schema
+├── .env.local                        # Environment variables
+└── package.json
+```
+
+## API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/incidents` | Get all incidents |
+| POST | `/api/incidents` | Create new incident |
+| GET | `/api/incidents/:id` | Get single incident |
+| PATCH | `/api/incidents/:id` | Update incident |
+| DELETE | `/api/incidents/:id` | Delete incident |
+
+## Data Model
+
+```typescript
+{
+  title: string           // Incident title
+  description: string      // Detailed description
+  incidentType: enum       // robbery | accident | assault | harassment | other
+  severity: enum           // low | medium | high | critical
+  location: {
+    lat: number           // Latitude
+    lng: number           // Longitude
+    address?: string       // Optional address
+  }
+  dateTime: Date          // When incident occurred
+  reporterName?: string   // Optional reporter name
+  reporterContact?: string // Optional contact info
+  verified: boolean       // Verified status
+  upvotes: number         // Community confirmations
+}
+```
+
+## Deployment
+
+### Vercel (Recommended)
+
+1. Push your code to GitHub
+2. Import your repository on [Vercel](https://vercel.com)
+3. Add environment variables in Vercel dashboard
+4. Deploy!
+
+### Other Platforms
+
+Make sure to:
+1. Set `MONGODB_URI` environment variable
+2. Run `npm run build` to create production build
+3. Start with `npm start`
+
+## Future Enhancements
+
+- [ ] User authentication and admin dashboard
+- [ ] Image uploads for incident reports
+- [ ] Email notifications for new incidents
+- [ ] Mobile app (React Native/Flutter)
+- [ ] Heatmap visualization of incident density
+- [ ] SMS alerts for critical incidents
+- [ ] Multi-language support (Bengali for Bangladesh)
+
+## License
+
+MIT License - Created for Final Year Project

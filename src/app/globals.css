@@ -1,8 +1,13 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f6f8fc;
+  --foreground: #1f2937;
+  --form-surface: #ffffff;
+  --form-border: #dadce0;
+  --form-accent: #1a73e8;
+  --form-accent-strong: #1765cc;
+  --form-strip: #673ab7;
 }
 
 @theme inline {
@@ -14,13 +19,48 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #f6f8fc;
+    --foreground: #1f2937;
+    --form-surface: #ffffff;
+    --form-border: #dadce0;
+    --form-accent: #1a73e8;
+    --form-accent-strong: #1765cc;
+    --form-strip: #673ab7;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), "Google Sans", "Segoe UI", sans-serif;
+}
+
+.form-card {
+  background: var(--form-surface);
+  border: 1px solid var(--form-border);
+  border-top: 8px solid var(--form-strip);
+  border-radius: 0.875rem;
+}
+
+.form-control {
+  width: 100%;
+  border: 1px solid var(--form-border);
+  border-radius: 0.5rem;
+  background: #fff;
+  color: var(--foreground);
+  outline: none;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.form-control:focus {
+  border-color: var(--form-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--form-accent) 18%, transparent);
+}
+
+.primary-button {
+  background: var(--form-accent);
+}
+
+.primary-button:hover {
+  background: var(--form-accent-strong);
 }
