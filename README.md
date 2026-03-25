@@ -15,6 +15,8 @@ A web application for reporting and tracking safety incidents in your community.
 - 🔍 **Filtering**: Filter incidents by type and severity
 - 📊 **Statistics**: Real-time stats showing incident counts by severity
 - 💾 **Database Storage**: All incidents stored in MongoDB
+- 🔐 **Admin Login (Minimal)**: Simple credential-based login for submission review
+- 🧾 **Admin Portal**: View submitted form responses in a protected dashboard
 
 ## Tech Stack
 
@@ -48,9 +50,13 @@ npm install
 cp .env.local.example .env.local
 ```
 
-Edit `.env.local` and add your MongoDB connection string:
+Edit `.env.local` and set values:
 ```
 MONGODB_URI=mongodb://localhost:27017/safety-map
+MONGODB_FALLBACK_URI=mongodb://localhost:27017/safety-map
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=change-this-password
+ADMIN_SESSION_SECRET=replace-with-a-long-random-secret
 ```
 
 4. Run the development server:
@@ -81,6 +87,40 @@ sudo systemctl start mongod
 3. Get your connection string from the dashboard
 4. Update `.env.local` with the connection string
 
+## Admin Portal Setup (Step-by-Step)
+
+1. Ensure all admin environment variables are set:
+```env
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=strong-password-here
+ADMIN_SESSION_SECRET=very-long-random-secret-min-32-chars
+```
+
+2. Start the app:
+```bash
+npm run dev
+```
+
+3. Open admin login:
+- `http://localhost:3000/admin/login`
+
+4. Sign in with `ADMIN_USERNAME` and `ADMIN_PASSWORD`.
+
+5. After login, submissions are loaded from protected backend route:
+- `GET /api/admin/incidents`
+
+6. Optional reliability fallback (recommended during Atlas TLS/network instability):
+- Set `MONGODB_FALLBACK_URI` to a local MongoDB URI.
+- If Atlas TLS handshake fails, the app automatically falls back to this URI.
+
+### Backend Security Notes
+
+- Admin session is stored in a signed `HttpOnly` cookie.
+- Cookie is configured with `SameSite=Lax`, `Path=/`, and expiry.
+- `secure` cookie flag is automatically enabled in production.
+- Admin API routes validate session cookie before returning submission data.
+- Keep `ADMIN_SESSION_SECRET` private and rotate it periodically.
+
 ## Usage
 
 1. **View Incidents**: The map displays all reported incidents with color-coded markers
@@ -90,6 +130,10 @@ sudo systemctl start mongod
    - Fill out the form with incident details
    - Submit the report
 4. **Click Markers**: View full details of any incident by clicking on its marker
+5. **Admin Review**:
+  - Open `/admin/login`
+  - Authenticate with admin credentials
+  - Review submissions in the admin dashboard
 
 ## Project Structure
 
@@ -102,12 +146,22 @@ safety-map/
 │   │   │       ├── route.ts          # GET/POST all incidents
 │   │   │       └── [id]/
 │   │   │           └── route.ts      # GET/PATCH/DELETE single incident
+│   │   │   └── admin/
+│   │   │       ├── login/route.ts    # Admin login route
+│   │   │       ├── logout/route.ts   # Admin logout route
+│   │   │       ├── session/route.ts  # Admin session status route
+│   │   │       └── incidents/route.ts # Protected admin incidents route
+│   │   ├── admin/
+│   │   │   ├── login/page.tsx        # Admin login page
+│   │   │   └── page.tsx              # Protected admin portal page
 │   │   ├── layout.tsx
 │   │   └── page.tsx                  # Main application page
 │   ├── components/
+│   │   ├── AdminPortal.tsx           # Admin submissions dashboard
 │   │   ├── IncidentForm.tsx          # Incident submission form
 │   │   └── SafetyMap.tsx             # Interactive map component
 │   ├── lib/
+│   │   ├── adminAuth.ts              # Admin session and auth helpers
 │   │   └── db.ts                     # MongoDB connection
 │   └── models/
 │       └── Incident.ts               # Mongoose schema
@@ -124,6 +178,10 @@ safety-map/
 | GET | `/api/incidents/:id` | Get single incident |
 | PATCH | `/api/incidents/:id` | Update incident |
 | DELETE | `/api/incidents/:id` | Delete incident |
+| POST | `/api/admin/login` | Create admin session |
+| POST | `/api/admin/logout` | Clear admin session |
+| GET | `/api/admin/session` | Check admin auth status |
+| GET | `/api/admin/incidents` | Get all incidents (admin only) |
 
 ## Data Model
 
@@ -164,7 +222,6 @@ Make sure to:
 
 ## Future Enhancements
 
-- [ ] User authentication and admin dashboard
 - [ ] Image uploads for incident reports
 - [ ] Email notifications for new incidents
 - [ ] Mobile app (React Native/Flutter)

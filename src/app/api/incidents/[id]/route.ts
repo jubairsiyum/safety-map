@@ -51,11 +51,21 @@ export async function PATCH(
     }
 
     return NextResponse.json({ success: true, data: incident }, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error updating incident:', error);
 
-    if (error.name === 'ValidationError') {
-      const messages = Object.values(error.errors).map((err: any) => err.message);
+    if (
+      error &&
+      typeof error === 'object' &&
+      'name' in error &&
+      error.name === 'ValidationError' &&
+      'errors' in error &&
+      error.errors &&
+      typeof error.errors === 'object'
+    ) {
+      const messages = Object.values(error.errors as Record<string, { message?: string }>).map(
+        (err) => err.message || 'Invalid input'
+      );
       return NextResponse.json(
         { success: false, error: messages.join(', ') },
         { status: 400 }
