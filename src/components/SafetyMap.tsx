@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
 import { Icon, LatLng } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -83,7 +82,7 @@ function MapClickHandler({ onMapClick }: MapClickHandlerProps) {
 interface SafetyMapProps {
   incidents: Incident[];
   selectedLocation: { lat: number; lng: number } | null;
-  onMapClick: (lat: number, lng: number) => void;
+  onMapClick?: (lat: number, lng: number) => void;
   height?: string;
 }
 
@@ -93,23 +92,6 @@ export default function SafetyMap({
   onMapClick,
   height = '500px',
 }: SafetyMapProps) {
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  if (!isMounted) {
-    return (
-      <div
-        className="bg-gray-100 rounded-lg flex items-center justify-center"
-        style={{ height }}
-      >
-        <p className="text-gray-500">Loading map...</p>
-      </div>
-    );
-  }
-
   const defaultCenter = selectedLocation
     ? [selectedLocation.lat, selectedLocation.lng]
     : [23.8103, 90.4125]; // Dhaka coordinates
@@ -125,11 +107,13 @@ export default function SafetyMap({
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      <MapClickHandler
-        onMapClick={(latlng) => {
-          onMapClick(latlng.lat, latlng.lng);
-        }}
-      />
+      {onMapClick && (
+        <MapClickHandler
+          onMapClick={(latlng) => {
+            onMapClick(latlng.lat, latlng.lng);
+          }}
+        />
+      )}
 
       {/* Selected location marker */}
       {selectedLocation && (

@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import SafetyMap, { Incident } from '@/components/SafetyMap';
 
 const incidentSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters').max(100),
@@ -23,12 +24,16 @@ const incidentSchema = z.object({
 type IncidentFormData = z.infer<typeof incidentSchema>;
 
 interface IncidentFormProps {
+  incidents: Incident[];
   selectedLocation: { lat: number; lng: number } | null;
+  onLocationSelect: (lat: number, lng: number) => void;
   onSubmitSuccess: () => void;
 }
 
 export default function IncidentForm({
+  incidents,
   selectedLocation,
+  onLocationSelect,
   onSubmitSuccess,
 }: IncidentFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -39,6 +44,7 @@ export default function IncidentForm({
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<IncidentFormData>({
     resolver: zodResolver(incidentSchema),
@@ -46,6 +52,12 @@ export default function IncidentForm({
       dateTime: new Date().toISOString().slice(0, 16),
     },
   });
+
+  useEffect(() => {
+    if (selectedLocation) {
+      setValue('location', selectedLocation, { shouldValidate: true });
+    }
+  }, [selectedLocation, setValue]);
 
   const onSubmit = async (data: IncidentFormData) => {
     if (!selectedLocation) {
@@ -84,8 +96,9 @@ export default function IncidentForm({
       setTimeout(() => {
         setSubmitSuccess(false);
       }, 5000);
-    } catch (error: any) {
-      setSubmitError(error.message || 'An error occurred while submitting');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'An error occurred while submitting';
+      setSubmitError(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -117,18 +130,6 @@ export default function IncidentForm({
       {submitSuccess && (
         <div className="bg-green-50 border border-green-200 text-green-700 px-3 py-2 rounded-md text-sm">
           ✅ Incident reported successfully! Thank you for helping keep the community safe.
-        </div>
-      )}
-
-      {!selectedLocation && (
-        <div className="bg-blue-50 border border-blue-200 text-blue-700 px-3 py-2 rounded-md text-sm">
-          ℹ️ Click on the map to select the incident location
-        </div>
-      )}
-
-      {selectedLocation && (
-        <div className="bg-green-50 border border-green-200 text-green-700 px-3 py-2 rounded-md text-sm">
-          ✅ Location selected: {selectedLocation.lat.toFixed(4)}, {selectedLocation.lng.toFixed(4)}
         </div>
       )}
 
@@ -199,6 +200,48 @@ export default function IncidentForm({
         {errors.dateTime && (
           <p className="text-red-500 text-sm mt-1">{errors.dateTime.message}</p>
         )}
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Incident Location *
+        </label>
+        <div className="border border-[var(--form-border)] rounded-md p-3 space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            {selectedLocation ? (
+              <span className="text-xs text-green-700 bg-green-50 border border-green-200 px-2 py-1 rounded-full">
+                Selected
+              </span>
+            ) : (
+              <span className="text-xs text-blue-700 bg-blue-50 border border-blue-200 px-2 py-1 rounded-full">
+                Tap map to set
+              </span>
+            )}
+          </div>
+
+          <div className="h-56 sm:h-64 rounded-md overflow-hidden border border-[var(--form-border)]">
+            <SafetyMap
+              incidents={incidents}
+              selectedLocation={selectedLocation}
+              onMapClick={onLocationSelect}
+              height="100%"
+            />
+          </div>
+
+          <p className="text-xs text-gray-600">
+            Click or tap on the map to pin the exact incident location.
+          </p>
+
+          {selectedLocation && (
+            <p className="text-xs text-gray-700">
+              Coordinates: {selectedLocation.lat.toFixed(5)}, {selectedLocation.lng.toFixed(5)}
+            </p>
+          )}
+
+          {errors.location && (
+            <p className="text-red-500 text-sm">Please select a location on the map</p>
+          )}
+        </div>
       </div>
 
       <div>

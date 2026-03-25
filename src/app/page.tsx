@@ -4,16 +4,6 @@ import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { Incident } from '@/components/SafetyMap';
 
-// Dynamic import to avoid SSR issues with Leaflet
-const SafetyMap = dynamic(() => import('@/components/SafetyMap'), {
-  ssr: false,
-  loading: () => (
-    <div className="bg-gray-100 rounded-lg flex items-center justify-center h-[500px]">
-      <p className="text-gray-500">Loading map...</p>
-    </div>
-  ),
-});
-
 const IncidentForm = dynamic(() => import('@/components/IncidentForm'), {
   ssr: false,
 });
@@ -69,7 +59,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[var(--background)]">
       {/* Header */}
-      <header className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+      <header className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
         <div className="form-card px-5 py-4 shadow-sm">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
@@ -103,76 +93,61 @@ export default function Home() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Map Section */}
-          <div className="lg:col-span-2 space-y-4">
-            {/* Filters */}
-            <div className="form-card p-4 shadow-sm">
-              <div className="flex flex-wrap gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Filter by Type
-                  </label>
-                  <select
-                    value={filterType}
-                    onChange={(e) => setFilterType(e.target.value)}
-                    className="form-control px-3 py-2 text-sm"
-                  >
-                    <option value="all">All Types</option>
-                    <option value="robbery">💰 Robbery</option>
-                    <option value="accident">🚗 Accident</option>
-                    <option value="assault">👊 Assault</option>
-                    <option value="harassment">🚨 Harassment</option>
-                    <option value="other">⚠️ Other</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Filter by Severity
-                  </label>
-                  <select
-                    value={filterSeverity}
-                    onChange={(e) => setFilterSeverity(e.target.value)}
-                    className="form-control px-3 py-2 text-sm"
-                  >
-                    <option value="all">All Levels</option>
-                    <option value="critical">Critical</option>
-                    <option value="high">High</option>
-                    <option value="medium">Medium</option>
-                    <option value="low">Low</option>
-                  </select>
-                </div>
-                <div className="ml-auto flex items-end">
-                  <p className="text-sm text-gray-600">
-                    Showing {filteredIncidents.length} of {incidents.length} incidents
-                  </p>
-                </div>
+      <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="space-y-5">
+          <div className="form-card p-4 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-4">
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Filter by Type
+                </label>
+                <select
+                  value={filterType}
+                  onChange={(e) => setFilterType(e.target.value)}
+                  className="form-control px-3 py-2 text-sm"
+                >
+                  <option value="all">All Types</option>
+                  <option value="robbery">💰 Robbery</option>
+                  <option value="accident">🚗 Accident</option>
+                  <option value="assault">👊 Assault</option>
+                  <option value="harassment">🚨 Harassment</option>
+                  <option value="other">⚠️ Other</option>
+                </select>
+              </div>
+
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Filter by Severity
+                </label>
+                <select
+                  value={filterSeverity}
+                  onChange={(e) => setFilterSeverity(e.target.value)}
+                  className="form-control px-3 py-2 text-sm"
+                >
+                  <option value="all">All Levels</option>
+                  <option value="critical">Critical</option>
+                  <option value="high">High</option>
+                  <option value="medium">Medium</option>
+                  <option value="low">Low</option>
+                </select>
               </div>
             </div>
 
-            {/* Map */}
-            <div className="form-card p-3 shadow-sm">
-              <SafetyMap
-                incidents={filteredIncidents}
-                selectedLocation={selectedLocation}
-                onMapClick={handleMapClick}
-                height="500px"
-              />
-            </div>
+            <p className="text-sm text-gray-600 mt-3">
+              Showing {filteredIncidents.length} of {incidents.length} incidents
+            </p>
           </div>
 
-          {/* Form Section */}
-          <div className="lg:col-span-1">
-            <div className="form-card shadow-sm p-5 sticky top-6">
-              <h2 className="text-base font-semibold text-gray-900 mb-4">
-                Report an Incident
-              </h2>
-              <IncidentForm
-                selectedLocation={selectedLocation}
-                onSubmitSuccess={fetchIncidents}
-              />
-            </div>
+          <div className="form-card shadow-sm p-5">
+            <h2 className="text-base font-semibold text-gray-900 mb-4 text-center sm:text-left">
+              Report an Incident
+            </h2>
+            <IncidentForm
+              incidents={filteredIncidents}
+              selectedLocation={selectedLocation}
+              onLocationSelect={handleMapClick}
+              onSubmitSuccess={fetchIncidents}
+            />
           </div>
         </div>
 
