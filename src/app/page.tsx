@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import { Incident } from '@/components/SafetyMap';
 
 const IncidentForm = dynamic(() => import('@/components/IncidentForm'), {
@@ -71,6 +72,12 @@ export default function Home() {
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+              <Link
+                href="/admin"
+                className="inline-flex items-center px-3 py-1.5 rounded-md border border-[var(--form-border)] text-gray-700 hover:bg-gray-50"
+              >
+                Admin Portal
+              </Link>
               <div className="flex items-center gap-2">
                 <span className="w-3 h-3 rounded-full bg-red-600"></span>
                 <span className="text-gray-600">{stats.critical} Critical</span>
